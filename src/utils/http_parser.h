@@ -26,14 +26,13 @@ extern "C" {
 
 /* Also update SONAME in the Makefile whenever you change these. */
 #define HTTP_PARSER_VERSION_MAJOR 2
-#define HTTP_PARSER_VERSION_MINOR 7
-#define HTTP_PARSER_VERSION_PATCH 1
+#define HTTP_PARSER_VERSION_MINOR 9
+#define HTTP_PARSER_VERSION_PATCH 4
 
-#include <sys/types.h>
+#include <stddef.h>
 #if defined(_WIN32) && !defined(__MINGW32__) && \
   (!defined(_MSC_VER) || _MSC_VER<1600) && !defined(__WINE__)
 #include <BaseTsd.h>
-#include <stddef.h>
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
 typedef __int16 int16_t;
@@ -42,6 +41,8 @@ typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
+#elif (defined(__sun) || defined(__sun__)) && defined(__SunOS_5_9)
+#include <sys/inttypes.h>
 #else
 #include <stdint.h>
 #endif
@@ -153,11 +154,11 @@ typedef int (*http_cb) (http_parser*);
   XX(511, NETWORK_AUTHENTICATION_REQUIRED, Network Authentication Required) \
 
 enum http_status
-  {
+{
 #define XX(num, name, string) HTTP_STATUS_##name = num,
-  HTTP_STATUS_MAP(XX)
+    HTTP_STATUS_MAP(XX)
 #undef XX
-  };
+};
 
 
 /* Request Methods */
@@ -202,13 +203,15 @@ enum http_status
   /* RFC-2068, section 19.6.1.2 */  \
   XX(31, LINK,        LINK)         \
   XX(32, UNLINK,      UNLINK)       \
+  /* icecast */                     \
+  XX(33, SOURCE,      SOURCE)       \
 
 enum http_method
-  {
+{
 #define XX(num, name, string) HTTP_##name = num,
-  HTTP_METHOD_MAP(XX)
+    HTTP_METHOD_MAP(XX)
 #undef XX
-  };
+};
 
 
 enum http_parser_type { HTTP_REQUEST, HTTP_RESPONSE, HTTP_BOTH };
@@ -216,15 +219,15 @@ enum http_parser_type { HTTP_REQUEST, HTTP_RESPONSE, HTTP_BOTH };
 
 /* Flag values for http_parser.flags field */
 enum flags
-  { F_CHUNKED               = 1 << 0
-  , F_CONNECTION_KEEP_ALIVE = 1 << 1
-  , F_CONNECTION_CLOSE      = 1 << 2
-  , F_CONNECTION_UPGRADE    = 1 << 3
-  , F_TRAILING              = 1 << 4
-  , F_UPGRADE               = 1 << 5
-  , F_SKIPBODY              = 1 << 6
-  , F_CONTENTLENGTH         = 1 << 7
-  };
+{ F_CHUNKED               = 1 << 0
+    , F_CONNECTION_KEEP_ALIVE = 1 << 1
+    , F_CONNECTION_CLOSE      = 1 << 2
+    , F_CONNECTION_UPGRADE    = 1 << 3
+    , F_TRAILING              = 1 << 4
+    , F_UPGRADE               = 1 << 5
+    , F_SKIPBODY              = 1 << 6
+    , F_CONTENTLENGTH         = 1 << 7
+};
 
 
 /* Map for errno-related constants
@@ -274,13 +277,15 @@ enum flags
   XX(INVALID_INTERNAL_STATE, "encountered unexpected internal state")\
   XX(STRICT, "strict mode assertion failed")                         \
   XX(PAUSED, "parser is paused")                                     \
-  XX(UNKNOWN, "an unknown error occurred")
+  XX(UNKNOWN, "an unknown error occurred")                           \
+  XX(INVALID_TRANSFER_ENCODING,                                      \
+     "request has invalid transfer-encoding")                        \
 
 
 /* Define HPE_* values for each errno value above */
 #define HTTP_ERRNO_GEN(n, s) HPE_##n,
 enum http_errno {
-  HTTP_ERRNO_MAP(HTTP_ERRNO_GEN)
+    HTTP_ERRNO_MAP(HTTP_ERRNO_GEN)
 };
 #undef HTTP_ERRNO_GEN
 
@@ -290,63 +295,69 @@ enum http_errno {
 
 
 struct http_parser {
-  /** PRIVATE **/
-  unsigned int type : 2;         /* enum http_parser_type */
-  unsigned int flags : 8;        /* F_* values from 'flags' enum; semi-public */
-  unsigned int state : 7;        /* enum state from http_parser.c */
-  unsigned int header_state : 7; /* enum header_state from http_parser.c */
-  unsigned int index : 7;        /* index into current matcher */
-  unsigned int lenient_http_headers : 1;
+    /** PRIVATE **/
+    unsigned int type : 2;         /* enum http_parser_type */
+    unsigned int flags : 8;       /* F_* values from 'flags' enum; semi-public */
+    unsigned int state : 7;        /* enum state from http_parser.c */
+    unsigned int header_state : 7; /* enum header_state from http_parser.c */
+    unsigned int index : 5;        /* index into current matcher */
+    unsigned int uses_transfer_encoding : 1; /* Transfer-Encoding header is present */
+    unsigned int allow_chunked_length : 1; /* Allow headers with both
+                                          * `Content-Length` and
+                                          * `Transfer-Encoding: chunked` set */
+    unsigned int lenient_http_headers : 1;
 
-  uint32_t nread;          /* # bytes read in various scenarios */
-  uint64_t content_length; /* # bytes in body (0 if no Content-Length header) */
+    uint32_t nread;          /* # bytes read in various scenarios */
+    uint64_t content_length; /* # bytes in body. `(uint64_t) -1` (all bits one)
+                            * if no Content-Length header.
+                            */
 
-  /** READ-ONLY **/
-  unsigned short http_major;
-  unsigned short http_minor;
-  unsigned int status_code : 16; /* responses only */
-  unsigned int method : 8;       /* requests only */
-  unsigned int http_errno : 7;
+    /** READ-ONLY **/
+    unsigned short http_major;
+    unsigned short http_minor;
+    unsigned int status_code : 16; /* responses only */
+    unsigned int method : 8;       /* requests only */
+    unsigned int http_errno : 7;
 
-  /* 1 = Upgrade header was present and the parser has exited because of that.
-   * 0 = No upgrade header present.
-   * Should be checked when http_parser_execute() returns in addition to
-   * error checking.
-   */
-  unsigned int upgrade : 1;
+    /* 1 = Upgrade header was present and the parser has exited because of that.
+     * 0 = No upgrade header present.
+     * Should be checked when http_parser_execute() returns in addition to
+     * error checking.
+     */
+    unsigned int upgrade : 1;
 
-  /** PUBLIC **/
-  void *data; /* A pointer to get hook to the "connection" or "socket" object */
+    /** PUBLIC **/
+    void *data; /* A pointer to get hook to the "connection" or "socket" object */
 };
 
 
 struct http_parser_settings {
-  http_cb      on_message_begin;
-  http_data_cb on_url;
-  http_data_cb on_status;
-  http_data_cb on_header_field;
-  http_data_cb on_header_value;
-  http_cb      on_headers_complete;
-  http_data_cb on_body;
-  http_cb      on_message_complete;
-  /* When on_chunk_header is called, the current chunk length is stored
-   * in parser->content_length.
-   */
-  http_cb      on_chunk_header;
-  http_cb      on_chunk_complete;
+    http_cb      on_message_begin;
+    http_data_cb on_url;
+    http_data_cb on_status;
+    http_data_cb on_header_field;
+    http_data_cb on_header_value;
+    http_cb      on_headers_complete;
+    http_data_cb on_body;
+    http_cb      on_message_complete;
+    /* When on_chunk_header is called, the current chunk length is stored
+     * in parser->content_length.
+     */
+    http_cb      on_chunk_header;
+    http_cb      on_chunk_complete;
 };
 
 
 enum http_parser_url_fields
-  { UF_SCHEMA           = 0
-  , UF_HOST             = 1
-  , UF_PORT             = 2
-  , UF_PATH             = 3
-  , UF_QUERY            = 4
-  , UF_FRAGMENT         = 5
-  , UF_USERINFO         = 6
-  , UF_MAX              = 7
-  };
+{ UF_SCHEMA           = 0
+    , UF_HOST             = 1
+    , UF_PORT             = 2
+    , UF_PATH             = 3
+    , UF_QUERY            = 4
+    , UF_FRAGMENT         = 5
+    , UF_USERINFO         = 6
+    , UF_MAX              = 7
+};
 
 
 /* Result structure for http_parser_parse_url().
@@ -357,13 +368,13 @@ enum http_parser_url_fields
  * a uint16_t.
  */
 struct http_parser_url {
-  uint16_t field_set;           /* Bitmask of (1 << UF_*) values */
-  uint16_t port;                /* Converted UF_PORT string */
+    uint16_t field_set;           /* Bitmask of (1 << UF_*) values */
+    uint16_t port;                /* Converted UF_PORT string */
 
-  struct {
-    uint16_t off;               /* Offset into buffer in which field starts */
-    uint16_t len;               /* Length of run in buffer */
-  } field_data[UF_MAX];
+    struct {
+        uint16_t off;               /* Offset into buffer in which field starts */
+        uint16_t len;               /* Length of run in buffer */
+    } field_data[UF_MAX];
 };
 
 
@@ -406,6 +417,9 @@ int http_should_keep_alive(const http_parser *parser);
 /* Returns a string version of the HTTP method. */
 const char *http_method_str(enum http_method m);
 
+/* Returns a string version of the HTTP status code. */
+const char *http_status_str(enum http_status s);
+
 /* Return a string name of the given error */
 const char *http_errno_name(enum http_errno err);
 
@@ -425,6 +439,9 @@ void http_parser_pause(http_parser *parser, int paused);
 
 /* Checks if this is the final chunk of the body. */
 int http_body_is_final(const http_parser *parser);
+
+/* Change the maximum header size provided at compile time. */
+void http_parser_set_max_header_size(uint32_t size);
 
 #ifdef __cplusplus
 }
