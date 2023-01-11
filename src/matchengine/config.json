@@ -1,0 +1,56 @@
+{
+    "debug": true,
+    "process": {
+        "file_limit": 1000000,
+        "core_limit": 1000000000
+    },
+    "log": {
+        "path": "/Users/danta/log/matchengine",
+        "flag": "fatal,error,warn,info,debug,trace",
+        "num": 10
+    },
+    "alert": {
+        "host": "matchengine",
+        "addr": "127.0.0.1:4444"
+    },
+    "svr": {
+        "bind": "tcp@0.0.0.0:7316",
+        "max_pkg_size": 10240
+    },
+    "cli": "tcp@127.0.0.1:8316",
+    "db_log": {
+        "host": "localhost",
+        "user": "root",
+        "pass": "12345678",
+        "name": "trade_log"
+    },   
+    "asset_url":  "http://120.78.203.98:8000/internal/exchange/account/asset",
+    "market_url": "http://120.78.203.98:8000/internal/exchange/market/list",
+    "brokers": "127.0.0.1:9092",
+    "slice_interval": 3600,
+    "slice_keeptime": 259200,
+    "depth_merge_max": 800,
+    "min_fee": "0",
+    "max_fee": "0.002",
+    "convert_fee": {
+        "FCNY": {
+            "money": "USDT",
+            "price": "0.15"
+        },
+        "TUSD": {
+            "money": "USDC",
+            "price": "1.0"
+        },
+        "PAX": {
+            "money": "USDC",
+            "price": "1.0"
+        },
+        "GUSD": {
+            "money": "USDC",
+            "price": "1.0"
+        }
+    },
+    "reader_num": 4,
+    "worker_timeout": 1.0,
+    "order_fini_keeptime": 5
+}

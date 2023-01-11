@@ -1,0 +1,58 @@
+{
+    "debug": true,
+    "process": {
+        "file_limit": 1000000,
+        "core_limit": 1000000000
+    },
+    "log": {
+        "path": "/Users/danta/log/readhistory",
+        "flag": "fatal,error,warn,info,debug,trace",
+        "num": 10
+    },
+    "alert": {
+        "host": "readhistory",
+        "addr": "127.0.0.1:4444"
+    },
+    "svr": {
+        "bind": "tcp@0.0.0.0:7516",
+        "max_pkg_size": 10240
+    },
+    "worker_num": 10,
+    "db_history": [
+         {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_0",
+            "db"  : 0
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_1",
+            "db"  : 1
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_2",
+            "db"  : 2
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_3",
+            "db"  : 3
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_4",
+            "db"  : 4
+        }
+    ]
+}

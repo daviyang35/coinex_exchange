@@ -1,0 +1,70 @@
+{
+    "debug": true,
+    "process": {
+        "file_limit": 1000000,
+        "core_limit": 1000000000
+    },
+    "log": {
+        "path": "/var/log/trade/accessrest",
+        "flag": "fatal,error,warn,info,debug,trace",
+        "num": 10
+    },
+    "alert": {
+        "host": "accessws",
+        "addr": "127.0.0.1:4444"
+    },
+    "monitor": {
+        "name": "monitor",
+        "addr": "tcp@127.0.0.1:5555",
+        "max_pkg_size": 1024
+    },
+    "svr": {
+        "bind": "tcp@127.0.0.1:9000",
+        "max_pkg_size": 102400
+    },
+    "matchengine": {
+        "name": "matchengine",
+        "addr": [
+            "tcp@127.0.0.1:7316"
+        ],
+        "max_pkg_size": 2000000
+    },
+    "marketindex": {
+        "name": "marketindex",
+        "addr": [
+            "tcp@127.0.0.1:7901"
+        ],
+        "max_pkg_size": 2000000
+    },
+    "marketprice": {
+        "name": "marketprice",
+        "addr": [
+            "tcp@127.0.0.1:7416"
+        ],
+        "max_pkg_size": 2000000
+    },
+    "cache_deals": {
+        "name": "cache_deals",
+        "addr": [
+            "tcp@127.0.0.1:7802"
+        ],
+        "max_pkg_size": 2000000,
+        "heartbeat_timeout": 30
+    },
+    "cache_state": {
+        "name": "cache_state",
+        "addr": [
+            "tcp@127.0.0.1:7803"
+        ],
+        "max_pkg_size": 2000000,
+        "heartbeat_timeout": 30
+    },
+    "cachecenter_host": "127.0.0.1",
+    "cachecenter_port": 7810,
+    "cachecenter_worker_num": 4,
+    "worker_num": 2,
+    "backend_timeout": 1.0,
+    "market_url": "http://120.78.203.98:8000/internal/exchange/market/list",
+    "depth_limit": [1, 5, 10, 20, 30, 50],
+    "depth_merge": ["0", "0.0000000001", "0.000000001", "0.00000001", "0.0000001", "0.000001", "0.00001", "0.0001", "0.001", "0.01", "0.1", "1", "10", "100"]
+}

@@ -1,0 +1,56 @@
+{
+    "debug": true,
+    "process": {
+        "file_limit": 1000000,
+        "core_limit": 1000000000
+    },
+    "log": {
+        "path": "/Users/danta/log/historywriter",
+        "flag": "fatal,error,warn,info,debug,trace",
+        "num": 10
+    },
+    "alert": {
+        "host": "historywriter",
+        "addr": "127.0.0.1:4444"
+    },
+    "cli": "tcp@127.0.0.1:7821",
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6386
+    },
+    "db_history": [
+         {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_0"
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_1"
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_2"
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_3"
+        },
+        {
+            "host": "localhost",
+            "user": "root",
+            "pass": "12345678",
+            "name": "trade_history_4"
+        }
+    ],
+    "brokers": "127.0.0.1:9092",
+    "worker_num": 10
+}
+
