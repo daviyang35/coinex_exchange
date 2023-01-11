@@ -1,8 +1,8 @@
 #!/bin/bash
 
-MYSQL_HOST=("localhost" "localhost" "localhost" "localhost" "localhost")
+MYSQL_HOST=("127.0.0.1" "127.0.0.1" "127.0.0.1" "127.0.0.1" "127.0.0.1")
 MYSQL_USER=("root" "root" "root" "root" "root")
-MYSQL_PASS=("12345678" "12345678" "12345678" "12345678" "12345678")
+MYSQL_PASS=("root" "root" "root" "root" "root")
 MYSQL_DB=(trade_history_0 trade_history_1 trade_history_2 trade_history_3 trade_history_4)
 
 LEN=${#MYSQL_DB[@]}

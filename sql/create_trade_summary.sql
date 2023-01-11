@@ -138,7 +138,7 @@ CREATE TABLE `dump_history` (
     `time`                  BIGINT NOT NULL,
     `trade_date`            DATE NOT NULL,
     `deals_offset`          BIGINT NOT NULL,
-    `orders_offset`         BIGINT NOT NULL
-    INDEX `idx_date` (`trade_date`),
+    `orders_offset`         BIGINT NOT NULL,
+    INDEX `idx_date` (`trade_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
