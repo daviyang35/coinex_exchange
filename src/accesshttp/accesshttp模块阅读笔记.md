@@ -1,14 +1,14 @@
 - [服务关系](#服务关系)
 - [程序结构](#程序结构)
-  - [进程](#进程)
-    - [worker进程](#worker进程)
-    - [listener进程](#listener进程)
-  - [程序逻辑](#程序逻辑)
-
+    - [进程](#进程)
+        - [worker进程](#worker进程)
+        - [listener进程](#listener进程)
+    - [程序逻辑](#程序逻辑)
 
 # 服务关系
 
-``` dot
+```plantuml
+@startdot
 digraph {
     rankdir=TB
     me[shape="record" label="amatchengine"]
@@ -34,7 +34,9 @@ digraph {
     
     me->w
 }
+@enddot
 ```
+
 ```
 accesshttp模块对外接收客户端指令.
 ```
@@ -42,8 +44,11 @@ accesshttp模块对外接收客户端指令.
 # 程序结构
 
 ## 进程
-  进程关系图如下：
-``` dot
+
+进程关系图如下：
+
+```plantuml
+@startdot
 digraph {
     M [label="主进程"]
 
@@ -56,7 +61,9 @@ digraph {
     P1->P2
     P2->P3
 }
+@enddot
 ```
+
 ```
 图中实线表示fork的子进程,虚线表示父进程.
 主进程根据配置在main函数中fork出指定数目的工作进程,如
@@ -65,18 +72,22 @@ accesshttp_listener是该程序的父进程.
 ```
 
 <span id="processes"></span>
+
 ### worker进程
+
     创建httpsvr用于与建立连接的客户端通信.
     创建各种与其他服务通信的rpc,如:matchengine,marketprice,marketindex,tradesummary
     创建与listener进程中worker_svr通信的rpc.
 
 <span id="processes"></span>
+
 ### listener进程
+
     创建listener_svr,用于监听客户端消息.
     创建worker_svr,用于监听worker子进程的连接.
 
+## 程序逻辑
 
-## 程序逻辑 
     1.lintener进程中执行 init_worker_svr() 函数,初始化worker_svr;
     2.worker进程中执行 init_listener_clt() 函数,创建listener(rpc)连接到linteneer进程中的worker_svr,
     并设置回调函数 on_listener_recv_fd(),等客户端与lintener进程中的listener_svr建立连接后,
